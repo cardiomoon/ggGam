@@ -217,13 +217,13 @@ result
 res1=apply(result,1,sum)
 if(is.null(which)) {
         par(mfrow=c(2,2))
-        plot(y~x,main="Raw Data",...)
-        plot(y~x,main="Raw Data + Basis Functions",...)
-        matplot(x,model_matrix,type="l",lty=2,add=T)
-        plot(y~x,main="Basis Functions*Coeff",...)
-        matplot(x,result,type="l",lty=2,add=T)
-        plot(y~x,main="Basis Functions*Coeff with Prediction",...)
-        matplot(x,result,type="l",lty=2,add=T)
+        plot(y~x,main="Raw Data")
+        plot(y~x,main="Raw Data + Basis Functions")
+        matplot(x,model_matrix,add=T,type="l",...)
+        plot(y~x,main="Basis Functions*Coeff")
+        matplot(x,result,add=T,type="l",...)
+        plot(y~x,main="Basis Functions*Coeff with Prediction")
+        matplot(x,result,add=T,type="l",...)
         newx=seq(min(x),max(x),length.out=100)
         newdata=data.frame(newx)
         names(newdata)=names(model$model)[2]
@@ -232,16 +232,16 @@ if(is.null(which)) {
         par(mfrow=c(1,1))
 
 } else if(which==1) {
-        plot(y~x,main="Raw Data",...)
+        plot(y~x,main="Raw Data")
 } else if(which==2){
-        plot(y~x,main="Raw Data + Basis Functions",...)
-        matplot(x,model_matrix,type="l",lty=2,add=T)
+        plot(y~x,main="Raw Data + Basis Functions")
+        matplot(x,model_matrix,add=T,type="l",...)
 } else if(which==3){
-        plot(y~x,main="Basis Functions*Coeff",...)
-        matplot(x,result,type="l",lty=2,add=T)
+        plot(y~x,main="Basis Functions*Coeff")
+        matplot(x,result,add=T,type="l",...)
 } else{
-       plot(y~x,main="Basis Functions*Coeff with Prediction",...)
-       matplot(x,result,type="l",lty=2,add=T)
+       plot(y~x,main="Basis Functions*Coeff with Prediction")
+       matplot(x,result,add=T,type="l",...)
        newx=seq(min(x),max(x),length.out=100)
        newdata=data.frame(newx)
        names(newdata)=names(model$model)[2]
