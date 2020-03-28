@@ -197,6 +197,7 @@ ggGamCat=function(model,scales="free_x"){
 #' data1 <- data.frame(y,x)
 #' model=gam(y~s(x),method="REML")
 #' basisFun(model)
+#' basisFun(model,which=1)
 #' basisFun(model,which=2)
 #' basisFun(model,which=3)
 #' basisFun(model,which=4)
@@ -217,12 +218,12 @@ result
 res1=apply(result,1,sum)
 if(is.null(which)) {
         par(mfrow=c(2,2))
-        plot(y~x,main="Raw Data")
-        plot(y~x,main="Raw Data + Basis Functions")
+        plot(y~x,main="Raw Data",pch=21,bg='gray',col=NA,...)
+        plot(y~x,main="Raw Data + Basis Functions",pch=21,bg='gray',col=NA,...)
         matplot(x,model_matrix,add=T,type="l",...)
-        plot(y~x,main="Basis Functions*Coeff")
+        plot(y~x,main="Basis Functions*Coeff",pch=21,bg='gray',col=NA,...)
         matplot(x,result,add=T,type="l",...)
-        plot(y~x,main="Basis Functions*Coeff with Prediction")
+        plot(y~x,main="Basis Functions*Coeff with Prediction",pch=21,bg='gray',col=NA,...)
         matplot(x,result,add=T,type="l",...)
         newx=seq(min(x),max(x),length.out=100)
         newdata=data.frame(newx)
@@ -232,15 +233,15 @@ if(is.null(which)) {
         par(mfrow=c(1,1))
 
 } else if(which==1) {
-        plot(y~x,main="Raw Data")
+        plot(y~x,main="Raw Data",pch=21,bg='gray',col=NA,...)
 } else if(which==2){
-        plot(y~x,main="Raw Data + Basis Functions")
+        plot(y~x,main="Raw Data + Basis Functions",pch=21,bg='gray',col=NA,...)
         matplot(x,model_matrix,add=T,type="l",...)
 } else if(which==3){
-        plot(y~x,main="Basis Functions*Coeff")
+        plot(y~x,main="Basis Functions*Coeff",pch=21,bg='gray',col=NA,...)
         matplot(x,result,add=T,type="l",...)
 } else{
-       plot(y~x,main="Basis Functions*Coeff with Prediction")
+       plot(y~x,main="Basis Functions*Coeff with Prediction",pch=21,bg='gray',col=NA,...)
        matplot(x,result,add=T,type="l",...)
        newx=seq(min(x),max(x),length.out=100)
        newdata=data.frame(newx)
