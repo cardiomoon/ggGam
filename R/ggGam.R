@@ -229,7 +229,7 @@ if(is.null(which)) {
         newdata=data.frame(newx)
         names(newdata)=names(model$model)[2]
         yhat=predict(model,newdata=newdata)
-        lines(yhat~newx,col="red",lwd=2)
+        lines(yhat~newx,lwd=2)
         par(mfrow=c(1,1))
 
 } else if(which==1) {
@@ -247,7 +247,7 @@ if(is.null(which)) {
        newdata=data.frame(newx)
        names(newdata)=names(model$model)[2]
        yhat=predict(model,newdata=newdata)
-       lines(yhat~newx,col="red",lwd=2)
+       lines(yhat~newx,lwd=2)
 }
 
 }
