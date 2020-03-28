@@ -18,6 +18,7 @@ Draw a ggplot summarizing categorical variables with an object of class gam
 require(mgcv)
 data(Wage,package="ISLR")
 model=gam(wage~s(age,by=education)+education+jobclass,data=Wage,method="REML")
-plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
+plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,
+    seWithMean=TRUE,residuals=TRUE)
 ggGamCat(model)
 }

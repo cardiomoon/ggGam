@@ -77,7 +77,7 @@ makeNewData=function(model,length=100,by=NULL){
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyselect all_of
 #' @importFrom dplyr filter
-#' @importFrom ggplot2 ggplot aes_string geom_point geom_line geom_ribbon ylab facet_wrap xlab
+#' @importFrom ggplot2 ggplot aes_string geom_point geom_line geom_ribbon ylab facet_wrap xlab scale_x_continuous
 #' @examples
 #' require(mgcv)
 #' mtcars$am=factor(mtcars$am,labels=c("automatic","manual"))
@@ -85,7 +85,11 @@ makeNewData=function(model,length=100,by=NULL){
 #' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 #' ggGam(model)
 #' ggGam(model,point=TRUE)
-ggGam=function(model,select=NULL,point=FALSE,se=TRUE,by=NULL,byauto=TRUE,scales="free_x"){
+#' data(mpg,package="gamair")
+#' model1 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
+#'    data=mpg, method="REML")
+#' ggGam(model1,se=FALSE,by="style")
+ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,byauto=TRUE,scales="free_x"){
 
      # select=NULL;point=FALSE;se=TRUE;by=NULL;byauto=FALSE;scales="free";
 
@@ -132,12 +136,14 @@ ggGam=function(model,select=NULL,point=FALSE,se=TRUE,by=NULL,byauto=TRUE,scales=
           p<-ggplot(df3,aes_string(x="value",group="1"))
           }
      }
+     p<-p+ geom_line(data=df3,aes_string(y="fit",color=fillvar))
 
-     p <- p+geom_line(data=df3,aes_string(y="fit"),color="blue")
-     if(se) p<-p+
-          geom_ribbon(data=df3,aes_string(y="fit",ymax="ymax",ymin="ymin"),alpha=0.3)
 
-     p<-p+ylab(yvar)
+     if(se) {
+          p<- p+geom_ribbon(data=df3,aes_string(y="fit",ymax="ymax",ymin="ymin"),alpha=0.3)
+     }
+
+     p<-p+ylab(yvar)+scale_x_continuous(guide=guide_axis(n.dodge=2))
      if(length(xvars2)>1) {
              p<-p+facet_wrap("name",scales=scales)+xlab("")
      } else{
@@ -158,7 +164,8 @@ ggGam=function(model,select=NULL,point=FALSE,se=TRUE,by=NULL,byauto=TRUE,scales=
 #' require(mgcv)
 #' data(Wage,package="ISLR")
 #' model=gam(wage~s(age,by=education)+education+jobclass,data=Wage,method="REML")
-#' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
+#' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,
+#'     seWithMean=TRUE,residuals=TRUE)
 #' ggGamCat(model)
 ggGamCat=function(model,scales="free_x"){
         # scales="free_x"

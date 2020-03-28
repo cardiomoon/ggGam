@@ -7,7 +7,7 @@
 ggGam(
   model,
   select = NULL,
-  point = FALSE,
+  point = TRUE,
   se = TRUE,
   by = NULL,
   byauto = TRUE,
@@ -39,4 +39,8 @@ model <- gam(mpg ~ s(wt,by=am)+am, data = mtcars, method = "REML")
 plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 ggGam(model)
 ggGam(model,point=TRUE)
+data(mpg,package="gamair")
+model1 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
+   data=mpg, method="REML")
+ggGam(model1,se=FALSE,by="style")
 }
