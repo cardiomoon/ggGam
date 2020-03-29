@@ -14,6 +14,7 @@ formula2vars=function(formula){
 #' @param model An object
 #' @param length numeric length of continuous variable to to predict
 #' @param by character optional factor variable
+#' @importFrom stats plogis
 #' @export
 makeNewData=function(model,length=100,by=NULL){
      xvars=formula2vars(model$formula)
@@ -43,17 +44,24 @@ makeNewData=function(model,length=100,by=NULL){
                     if(i==select){
                          result[[i]]=seq(from=x[[i]][1],to=x[[i]][3],length.out=length)
                     } else{
-                         result[[i]]=x[[i]][2]
+                         result[[i]]=mean(model$model[[names(x)[i]]],na.rm=TRUE)
                     }
                }
           }
           result
           names(result)=names(x)
           newdata=as.data.frame(expand.grid(result))
-          predict(model,newdata=newdata,type="response",se.fit=TRUE,na.action="na.omit")
-          df1=as.data.frame(predict(model,newdata=newdata,type="response",se.fit=TRUE))
-          df1$ymax=df1$fit+1.96*df1$se.fit
-          df1$ymin=df1$fit-1.96*df1$se.fit
+
+          if(model$family$family=="binomial"){
+                  df1=as.data.frame(predict(model,newdata=newdata,type="link",se.fit=TRUE))
+                  df1$ymax=df1$fit+1.96*df1$se.fit
+                  df1$ymin=df1$fit-1.96*df1$se.fit
+                  df1[]=lapply(df1,plogis)
+          } else{
+            df1=as.data.frame(predict(model,newdata=newdata,type="response",se.fit=TRUE))
+            df1$ymax=df1$fit+1.96*df1$se.fit
+            df1$ymin=df1$fit-1.96*df1$se.fit
+          }
           df=cbind(newdata,df1)
           df$xvar=names(x)[select]
           if(j==1) {
