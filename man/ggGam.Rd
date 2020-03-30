@@ -41,10 +41,11 @@ mtcars$am=factor(mtcars$am,labels=c("automatic","manual"))
 model <- gam(mpg ~ s(wt,by=am)+am, data = mtcars, method = "REML")
 plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 ggGam(model)
-ggGam(model,point=TRUE)
+ggGam(model,point=FALSE)
 data(mpg,package="gamair")
 model1 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
    data=mpg, method="REML")
+ggGam(model1,se=TRUE)
 ggGam(model1,se=FALSE,by="style")
-ggGam(model1,se=FALSE)
+ggGam(model1,se=FALSE,by="drive",point=FALSE)
 }

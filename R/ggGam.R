@@ -20,7 +20,7 @@ formula2vars=function(formula){
 #' @importFrom predict3d restoreData2 restoreData3
 #' @export
 makeNewData=function(model,length=100,by=NULL){
-          # length=100;by="am"
+              # length=100;by="sex"
      xvars=formula2vars(model$formula)
      xvars
      if(!is.null(by)) {
@@ -29,9 +29,8 @@ makeNewData=function(model,length=100,by=NULL){
         xvars2=xvars
      }
      xvars2
-     names(model$model)
-     j=1
-     for(j in 1:length(xvars2)){
+
+     for(j in 1:length(xvars)){
         result=list()
         for(i in 1:length(xvars)){
                x=model$model[[xvars[i]]]
@@ -66,6 +65,7 @@ makeNewData=function(model,length=100,by=NULL){
                   df1=as.data.frame(predict(model,newdata=newdata,type="link",se.fit=TRUE))
                   df1$ymax=df1$fit+1.96*df1$se.fit
                   df1$ymin=df1$fit-1.96*df1$se.fit
+                  #df1[]=lapply(df1,plogis)
           }else{
 
             df1=as.data.frame(predict(model,newdata=newdata,type="response",se.fit=TRUE))
@@ -105,17 +105,19 @@ makeNewData=function(model,length=100,by=NULL){
 #' model <- gam(mpg ~ s(wt,by=am)+am, data = mtcars, method = "REML")
 #' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 #' ggGam(model)
-#' ggGam(model,point=TRUE)
+#' ggGam(model,point=FALSE)
 #' data(mpg,package="gamair")
 #' model1 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
 #'    data=mpg, method="REML")
+#' ggGam(model1,se=TRUE)
 #' ggGam(model1,se=FALSE,by="style")
-#' ggGam(model1,se=FALSE)
+#' ggGam(model1,se=FALSE,by="drive",point=FALSE)
 ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,byauto=TRUE,scales="free_x"){
 
-      # select=NULL;point=FALSE;se=TRUE;by=NULL;byauto=TRUE;scales="free_x";
+       # select=NULL;point=FALSE;se=TRUE;by=NULL;byauto=TRUE;scales="free_x";
 
      byall=names(model$var.summary)[sapply(model$var.summary,is.factor)]
+
      if(length(byall)>1) {
           if(byauto & is.null(by)) {
                   cat("Only one factor variable is used as fill variable")
@@ -128,6 +130,7 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,byauto=TRUE,scales="
      }
 
      df1=makeNewData(model,by=by)
+     table(df1$xvar)
      xvars=formula2vars(model$formula)
      xvars2=setdiff(xvars,byall)
      yvar=names(model$model)[1]
