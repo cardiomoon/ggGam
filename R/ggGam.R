@@ -1,12 +1,14 @@
 #'Extract independent variable name from formula
 #'@param formula formula
+#'@export
 formula2vars=function(formula){
         temp=deparse(formula)
         temp=paste0(temp,collapse="")
 
         temp1=unlist(strsplit(temp,"~"))[2]
         temp2=unlist(strsplit(temp1,"\\+"))
-        temp3=gsub("^.*\\(|\\)| ","",temp2)
+        temp2=gsub(" ","",temp2)
+        temp3=gsub("^s\\(|\\)$","",temp2)
         gsub(",.*$","",temp3)
 }
 
@@ -15,55 +17,63 @@ formula2vars=function(formula){
 #' @param length numeric length of continuous variable to to predict
 #' @param by character optional factor variable
 #' @importFrom stats plogis
+#' @importFrom predict3d restoreData2 restoreData3
 #' @export
 makeNewData=function(model,length=100,by=NULL){
+          # length=100;by="am"
      xvars=formula2vars(model$formula)
      xvars
-     if(!is.null(by)) xvars=setdiff(xvars,by)
-     xvars
-     x=model$var.summary
-
-     names(x)
-
-     for(j in 1:length(xvars)){
-
-          select=which(names(x)==xvars[j])
-          select
-          result=list()
-
-          for(i in 1:length(x)){
-               if(is.factor(x[[i]])) {
-                    if(i==select) {
-                         result[[i]]=levels(model$model[[names(x)[i]]])
-                    } else if(names(x)[i] %in% by){
-                         result[[i]]=levels(model$model[[names(x)[i]]])
+     if(!is.null(by)) {
+             xvars2=setdiff(xvars,by)
+     } else{
+        xvars2=xvars
+     }
+     xvars2
+     names(model$model)
+     j=1
+     for(j in 1:length(xvars2)){
+        result=list()
+        for(i in 1:length(xvars)){
+               x=model$model[[xvars[i]]]
+               if(is.factor(x)) {
+                    if(i==j) {
+                         result[[i]]=levels(x)
+                    } else if(xvars[i] %in% by){
+                         result[[i]]=levels(x)
                     } else{
-                         result[[i]]=x[[i]][1]
+                         result[[i]]=levels(x)[1]
                     }
                } else {  ## numeric
-                    if(i==select){
-                         result[[i]]=seq(from=x[[i]][1],to=x[[i]][3],length.out=length)
+                    if(i==j){
+                         result[[i]]=seq(from=min(x,na.rm=TRUE),to=max(x,na.rm=TRUE),length.out=length)
                     } else{
-                         result[[i]]=mean(model$model[[names(x)[i]]],na.rm=TRUE)
+                         result[[i]]=mean(x,na.rm=TRUE)
                     }
                }
           }
           result
-          names(result)=names(x)
+          names(result)=xvars
           newdata=as.data.frame(expand.grid(result))
-
+          newdata=restoreData2(newdata)
+          newdata=restoreData3(newdata)
+          names(newdata)
           if(model$family$family=="binomial"){
                   df1=as.data.frame(predict(model,newdata=newdata,type="link",se.fit=TRUE))
                   df1$ymax=df1$fit+1.96*df1$se.fit
                   df1$ymin=df1$fit-1.96*df1$se.fit
                   df1[]=lapply(df1,plogis)
-          } else{
+          } else if(model$family$family=="Cox PH"){
+                  df1=as.data.frame(predict(model,newdata=newdata,type="link",se.fit=TRUE))
+                  df1$ymax=df1$fit+1.96*df1$se.fit
+                  df1$ymin=df1$fit-1.96*df1$se.fit
+          }else{
+
             df1=as.data.frame(predict(model,newdata=newdata,type="response",se.fit=TRUE))
             df1$ymax=df1$fit+1.96*df1$se.fit
             df1$ymin=df1$fit-1.96*df1$se.fit
           }
           df=cbind(newdata,df1)
-          df$xvar=names(x)[select]
+          df$xvar=xvars[j]
           if(j==1) {
                final=df
           } else{
@@ -88,6 +98,9 @@ makeNewData=function(model,length=100,by=NULL){
 #' @importFrom ggplot2 ggplot aes_string geom_point geom_line geom_ribbon ylab facet_wrap xlab scale_x_continuous
 #' @examples
 #' require(mgcv)
+#' model <- gam(mpg ~ s(wt), data = mtcars, method = "REML")
+#' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
+#' ggGam(model)
 #' mtcars$am=factor(mtcars$am,labels=c("automatic","manual"))
 #' model <- gam(mpg ~ s(wt,by=am)+am, data = mtcars, method = "REML")
 #' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
@@ -97,9 +110,10 @@ makeNewData=function(model,length=100,by=NULL){
 #' model1 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
 #'    data=mpg, method="REML")
 #' ggGam(model1,se=FALSE,by="style")
+#' ggGam(model1,se=FALSE)
 ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,byauto=TRUE,scales="free_x"){
 
-     # select=NULL;point=FALSE;se=TRUE;by=NULL;byauto=FALSE;scales="free";
+      # select=NULL;point=FALSE;se=TRUE;by=NULL;byauto=TRUE;scales="free_x";
 
      byall=names(model$var.summary)[sapply(model$var.summary,is.factor)]
      if(length(byall)>1) {
@@ -150,7 +164,7 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,byauto=TRUE,scales="
      if(se) {
           p<- p+geom_ribbon(data=df3,aes_string(y="fit",ymax="ymax",ymin="ymin"),alpha=0.3)
      }
-
+     if(model$family$family=="Cox PH") yvar="Hazard Ratio"
      p<-p+ylab(yvar)+scale_x_continuous(guide=guide_axis(n.dodge=2))
      if(length(xvars2)>1) {
              p<-p+facet_wrap("name",scales=scales)+xlab("")
@@ -186,6 +200,7 @@ ggGamCat=function(model,scales="free_x"){
         df2<-df2[df2[["xvar"]]==df2[["name"]],]
         yvar=names(model$model)[1]
         df2
+        if(model$family$family=="Cox PH") yvar="Hazard Ratio"
         ggplot(df2, aes_string(x="value",y="fit")) +
                 geom_point() +
                 geom_errorbar(aes_string(ymin="fit-2*se.fit",ymax="fit+2*se.fit"),width=0.25) +

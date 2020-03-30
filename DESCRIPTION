@@ -10,7 +10,8 @@ Imports: ggplot2(>= 3.3.0),
          mgcv (>= 1.8-31),
          dplyr,
          tidyr,
-         tidyselect
+         tidyselect,
+         predict3d
 Suggests: ISLR,
           gamair
 License: GPL-3
