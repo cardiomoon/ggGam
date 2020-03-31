@@ -10,8 +10,8 @@ ggGam(
   point = TRUE,
   se = TRUE,
   by = NULL,
-  byauto = TRUE,
-  scales = "free_x"
+  scales = "free_x",
+  type = NULL
 )
 }
 \arguments{
@@ -23,11 +23,11 @@ ggGam(
 
 \item{se}{logical Whether or not draw confidence interval}
 
-\item{by}{character optional name of factor variable}
-
-\item{byauto}{logical Whether or not select categorical variables automatically}
+\item{by}{NULL or character optional name of factor variable}
 
 \item{scales}{Should scales be fixed ("fixed"), free ("free"), or free in one dimension ("free_x", "free_y")?}
+
+\item{type}{character type argument to be passed to predict.gam}
 }
 \description{
 Draw a ggplot with an object of class gam
@@ -38,14 +38,22 @@ model <- gam(mpg ~ s(wt), data = mtcars, method = "REML")
 plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 ggGam(model)
 mtcars$am=factor(mtcars$am,labels=c("automatic","manual"))
+model <- gam(mpg ~ s(wt)+am, data = mtcars, method = "REML")
+plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
+ggGam(model)
+ggGam(model,by=am)
 model <- gam(mpg ~ s(wt,by=am)+am, data = mtcars, method = "REML")
 plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 ggGam(model)
-ggGam(model,point=FALSE)
+ggGam(model,by=am)
+ggGam(model,by=am,point=FALSE)
+ggGamCat(model)
 data(mpg,package="gamair")
 model1 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
    data=mpg, method="REML")
+plot(model1,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 ggGam(model1,se=TRUE)
-ggGam(model1,se=FALSE,by="style")
-ggGam(model1,se=FALSE,by="drive",point=FALSE)
+ggGam(model1,se=TRUE,by=fuel,select=1)
+ggGam(model1,se=FALSE,by=style)
+ggGam(model1,se=FALSE,by=drive,point=FALSE)
 }

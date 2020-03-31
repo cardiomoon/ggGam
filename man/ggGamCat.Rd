@@ -4,12 +4,16 @@
 \alias{ggGamCat}
 \title{Draw a ggplot summarizing categorical variables with an object of class gam}
 \usage{
-ggGamCat(model, scales = "free_x")
+ggGamCat(model, select = NULL, scales = "free_x", type = NULL)
 }
 \arguments{
 \item{model}{An object of class gam}
 
+\item{select}{numeric Choices of dependent categorical variables to plot}
+
 \item{scales}{Should scales be fixed ("fixed"), free ("free"), or free in one dimension ("free_x", "free_y")?}
+
+\item{type}{character type argument to be passed to predict.gam}
 }
 \description{
 Draw a ggplot summarizing categorical variables with an object of class gam

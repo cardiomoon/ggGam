@@ -4,23 +4,27 @@
 formula2vars=function(formula){
         temp=deparse(formula)
         temp=paste0(temp,collapse="")
-
+        temp
         temp1=unlist(strsplit(temp,"~"))[2]
         temp2=unlist(strsplit(temp1,"\\+"))
         temp2=gsub(" ","",temp2)
-        temp3=gsub("^s\\(|\\)$","",temp2)
-        gsub(",.*$","",temp3)
+        temp2
+        temp3=gsub("^s\\(|^ti\\(|\\)$","",temp2)
+        temp3
+        temp4=gsub(",by=.*$","",temp3)
+        unique(unlist(strsplit(temp4,",")))
 }
 
 #' Make new data for predict
 #' @param model An object
 #' @param length numeric length of continuous variable to to predict
 #' @param by character optional factor variable
+#' @param type character type argument to be passed to predict.gam
 #' @importFrom stats plogis
 #' @importFrom predict3d restoreData2 restoreData3
 #' @export
-makeNewData=function(model,length=100,by=NULL){
-              # length=100;by="sex"
+makeNewData=function(model,length=100,by=NULL,type="response"){
+                # length=100;by=NULL
      xvars=formula2vars(model$formula)
      xvars
      if(!is.null(by)) {
@@ -60,15 +64,15 @@ makeNewData=function(model,length=100,by=NULL){
                   df1=as.data.frame(predict(model,newdata=newdata,type="link",se.fit=TRUE))
                   df1$ymax=df1$fit+1.96*df1$se.fit
                   df1$ymin=df1$fit-1.96*df1$se.fit
-                  df1[]=lapply(df1,plogis)
+                  if(type=="response") df1[]=lapply(df1,plogis)
           } else if(model$family$family=="Cox PH"){
                   df1=as.data.frame(predict(model,newdata=newdata,type="link",se.fit=TRUE))
                   df1$ymax=df1$fit+1.96*df1$se.fit
                   df1$ymin=df1$fit-1.96*df1$se.fit
-                  #df1[]=lapply(df1,plogis)
+                  if(type=="response") df1[]=lapply(df1,plogis)
           }else{
 
-            df1=as.data.frame(predict(model,newdata=newdata,type="response",se.fit=TRUE))
+            df1=as.data.frame(predict(model,newdata=newdata,type=type,se.fit=TRUE))
             df1$ymax=df1$fit+1.96*df1$se.fit
             df1$ymin=df1$fit-1.96*df1$se.fit
           }
@@ -83,14 +87,29 @@ makeNewData=function(model,length=100,by=NULL){
      final
 }
 
+
+#'Make list of args with call string
+#'@param string A character
+#'@return A list
+call2vars=function(string){
+  temp1 = gsub("^.*\\(|\\)$| |\"", "", string)
+  temp2=unlist(strsplit(temp1,","))
+  temp3=unlist(strsplit(temp2,"="))
+  result=list()
+  for(i in 1:(length(temp3)/2)){
+    result[[temp3[2*i-1]]]=temp3[2*i]
+  }
+  result
+}
+
 #' Draw a ggplot with an object of class gam
 #' @param model An object of class gam
 #' @param select numeric Choices of dependent variables to plot
 #' @param point logical Whether or not draw point
 #' @param se logical Whether or not draw confidence interval
-#' @param by character optional name of factor variable
-#' @param byauto logical Whether or not select categorical variables automatically
+#' @param by NULL or character optional name of factor variable
 #' @param scales Should scales be fixed ("fixed"), free ("free"), or free in one dimension ("free_x", "free_y")?
+#' @param type character type argument to be passed to predict.gam
 #' @export
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyselect all_of
@@ -102,40 +121,57 @@ makeNewData=function(model,length=100,by=NULL){
 #' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 #' ggGam(model)
 #' mtcars$am=factor(mtcars$am,labels=c("automatic","manual"))
+#' model <- gam(mpg ~ s(wt)+am, data = mtcars, method = "REML")
+#' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
+#' ggGam(model)
+#' ggGam(model,by=am)
 #' model <- gam(mpg ~ s(wt,by=am)+am, data = mtcars, method = "REML")
 #' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 #' ggGam(model)
-#' ggGam(model,point=FALSE)
+#' ggGam(model,by=am)
+#' ggGam(model,by=am,point=FALSE)
+#' ggGamCat(model)
 #' data(mpg,package="gamair")
 #' model1 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
 #'    data=mpg, method="REML")
+#' plot(model1,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 #' ggGam(model1,se=TRUE)
-#' ggGam(model1,se=FALSE,by="style")
-#' ggGam(model1,se=FALSE,by="drive",point=FALSE)
-ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,byauto=TRUE,scales="free_x"){
+#' ggGam(model1,se=TRUE,by=fuel,select=1)
+#' ggGam(model1,se=FALSE,by=style)
+#' ggGam(model1,se=FALSE,by=drive,point=FALSE)
+ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type=NULL){
 
-       # select=NULL;point=FALSE;se=TRUE;by=NULL;byauto=TRUE;scales="free_x";
+        # select=1;point=FALSE;se=TRUE;by=NULL;scales="free_x";
+
+     temp=deparse(match.call())
+     res=call2vars(temp)
+     by=res$by
+     facet=TRUE
 
      byall=names(model$var.summary)[sapply(model$var.summary,is.factor)]
-
-     if(length(byall)>1) {
-          if(byauto & is.null(by)) {
-                  cat("Only one factor variable is used as fill variable")
-                  by=byall[1]
-          }
-     } else if(length(byall)==1){
-             if(byauto & is.null(by)) by=byall
-     } else{
-          by=NULL
+     if(length(byall)==1) {
+       if(is.null(by)) {
+         by=byall[1]
+         facet=FALSE
+       }
      }
 
-     df1=makeNewData(model,by=by)
+     if(is.null(type)) {
+        if(model$family$family %in% c("Cox PH","binomial")) {
+          type="link"
+        } else{
+          type="response"
+        }
+
+     }
+     df1=makeNewData(model,by=by,type=type)
      table(df1$xvar)
      xvars=formula2vars(model$formula)
      xvars2=setdiff(xvars,byall)
      yvar=names(model$model)[1]
      xvars2
      df1
+     select
      if(!is.null(select)) {
           xvars2=xvars2[select]
           if(is.na(xvars2)) xvars2=xvars[select]
@@ -167,11 +203,30 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,byauto=TRUE,scales="
      if(se) {
           p<- p+geom_ribbon(data=df3,aes_string(y="fit",ymax="ymax",ymin="ymin"),alpha=0.3)
      }
-     if(model$family$family=="Cox PH") yvar="Hazard Ratio"
+
+     if(model$family$family=="Cox PH") {
+         yvar=ifelse(type=="link","Hazard Ratio","Probabilty")
+     } else if(model$family$family=="binomial"){
+         yvar=ifelse(type=="link","Odds Ratio","Probability")
+     }
+
      p<-p+ylab(yvar)+scale_x_continuous(guide=guide_axis(n.dodge=2))
      if(length(xvars2)>1) {
-             p<-p+facet_wrap("name",scales=scales)+xlab("")
-     } else{
+             p<-p+facet_wrap("name",scales=scales)+xlab("")+
+               theme(legend.position="top")
+     } else if(facet){
+           if(is.null(select)){
+            p<-p+facet_wrap(fillvar,scales=scales)+xlab("")+
+               theme(legend.position="none")
+           } else if(length(select)>1){
+             p<-p+facet_wrap(fillvar,scales=scales)+xlab("")+
+               theme(legend.position="none")
+           } else{
+             p<-p+xlab(xvars2)
+           }
+     } else if(!is.null(fillvar)){
+            p<-p+theme(legend.position="top")
+      }else{
              p<-p+xlab(xvars2)
      }
      p
@@ -181,8 +236,10 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,byauto=TRUE,scales="
 
 #' Draw a ggplot summarizing categorical variables with an object of class gam
 #' @param model An object of class gam
+#' @param select numeric Choices of dependent categorical variables to plot
 #' @param scales Should scales be fixed ("fixed"), free ("free"), or free in one dimension ("free_x", "free_y")?
-#' @importFrom ggplot2 ggplot geom_errorbar scale_x_discrete labs guide_axis facet_wrap
+#' @param type character type argument to be passed to predict.gam
+#' @importFrom ggplot2 ggplot geom_errorbar scale_x_discrete labs guide_axis facet_wrap theme
 #' @importFrom dplyr vars
 #' @export
 #' @examples
@@ -192,18 +249,34 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,byauto=TRUE,scales="
 #' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,
 #'     seWithMean=TRUE,residuals=TRUE)
 #' ggGamCat(model)
-ggGamCat=function(model,scales="free_x"){
-        # scales="free_x"
-        # require(ggplot2)
-        df=makeNewData(model)
+ggGamCat=function(model,select=NULL,scales="free_x",type=NULL){
+        # scales="free_x";select=c(2,3)
+
+      if(is.null(type)) {
+          if(model$family$family %in% c("Cox PH","binomial")) {
+            type="link"
+          } else{
+            type="response"
+          }
+
+      }
+        df=makeNewData(model,type=type)
         catVars=names(model$var.summary)[sapply(model$var.summary,is.factor)]
+        catVars
+        if(!is.null(select)) catVars=catVars[select]
         df=df[df$xvar %in% catVars,]
         df2<-tidyr::pivot_longer(df,cols=all_of(catVars))
         df2
         df2<-df2[df2[["xvar"]]==df2[["name"]],]
         yvar=names(model$model)[1]
         df2
-        if(model$family$family=="Cox PH") yvar="Hazard Ratio"
+
+        if(model$family$family=="Cox PH") {
+          yvar=ifelse(type=="link","Hazard Ratio","Probabilty")
+        } else if(model$family$family=="binomial"){
+          yvar=ifelse(type=="link","Odds Ratio","Probability")
+        }
+        df2$name=factor(df2$name,levels=catVars)
         ggplot(df2, aes_string(x="value",y="fit")) +
                 geom_point() +
                 geom_errorbar(aes_string(ymin="fit-2*se.fit",ymax="fit+2*se.fit"),width=0.25) +
