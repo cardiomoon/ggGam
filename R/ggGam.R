@@ -2,14 +2,16 @@
 #'@param formula formula
 #'@export
 formula2vars=function(formula){
+        #formula=model$formula
         temp=deparse(formula)
+
         temp=paste0(temp,collapse="")
         temp
         temp1=unlist(strsplit(temp,"~"))[2]
         temp2=unlist(strsplit(temp1,"\\+"))
         temp2=gsub(" ","",temp2)
         temp2
-        temp3=gsub("^s\\(|^ti\\(|\\)$","",temp2)
+        temp3=gsub(",bs=\"fs\"|^s\\(|^ti\\(|\\)$","",temp2)
         temp3
         temp4=gsub(",by=.*$","",temp3)
         unique(unlist(strsplit(temp4,",")))
@@ -132,16 +134,18 @@ call2vars=function(string){
 #' ggGam(model,by=am,point=FALSE)
 #' ggGamCat(model)
 #' data(mpg,package="gamair")
-#' model1 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
+#' model <- gam(hw.mpg ~ s(weight, fuel, bs = "fs"),data = mpg,method = "REML")
+#' ggGam(model)
+#' model2 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
 #'    data=mpg, method="REML")
-#' plot(model1,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
-#' ggGam(model1,se=TRUE)
-#' ggGam(model1,se=TRUE,by=fuel,select=1)
-#' ggGam(model1,se=FALSE,by=style)
-#' ggGam(model1,se=FALSE,by=drive,point=FALSE)
+#' plot(model2,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
+#' ggGam(model2,se=TRUE)
+#' ggGam(model2,se=TRUE,by=fuel,select=1)
+#' ggGam(model2,se=FALSE,by=style)
+#' ggGam(model2,se=FALSE,by=drive,point=FALSE)
 ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type=NULL){
 
-        # select=1;point=FALSE;se=TRUE;by=NULL;scales="free_x";
+         # select=1;point=FALSE;se=TRUE;by=NULL;scales="free_x";type=NULL
 
      temp=deparse(match.call())
      res=call2vars(temp)
@@ -165,8 +169,11 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
 
      }
      df1=makeNewData(model,by=by,type=type)
+
      table(df1$xvar)
      xvars=formula2vars(model$formula)
+     xvars
+     byall
      xvars2=setdiff(xvars,byall)
      yvar=names(model$model)[1]
      xvars2
