@@ -112,6 +112,8 @@ call2vars=function(string){
 #' @param by NULL or character optional name of factor variable
 #' @param scales Should scales be fixed ("fixed"), free ("free"), or free in one dimension ("free_x", "free_y")?
 #' @param type character type argument to be passed to predict.gam
+#' @param byauto logical Whether or not choose variabels to facet automatically
+#' @param facet logical Whether or not make facetted plot
 #' @export
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyselect all_of
@@ -127,15 +129,19 @@ call2vars=function(string){
 #' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 #' ggGam(model)
 #' ggGam(model,by=am)
+#' ggGam(model,by=am,facet=TRUE)
 #' model <- gam(mpg ~ s(wt,by=am)+am, data = mtcars, method = "REML")
 #' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
-#' ggGam(model)
+#' ggGam(model,facet=TRUE)
 #' ggGam(model,by=am)
+#' ggGam(model,by=am,facet=TRUE)
 #' ggGam(model,by=am,point=FALSE)
 #' ggGamCat(model)
 #' data(mpg,package="gamair")
 #' model <- gam(hw.mpg ~ s(weight, fuel, bs = "fs"),data = mpg,method = "REML")
 #' ggGam(model)
+#' ggGam(model,by=fuel)
+#' ggGam(model,by=fuel,facet=TRUE)
 #' model2 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
 #'    data=mpg, method="REML")
 #' plot(model2,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
@@ -143,20 +149,18 @@ call2vars=function(string){
 #' ggGam(model2,se=TRUE,by=fuel,select=1)
 #' ggGam(model2,se=FALSE,by=style)
 #' ggGam(model2,se=FALSE,by=drive,point=FALSE)
-ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type=NULL){
+ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type=NULL,byauto=FALSE,facet=FALSE){
 
-         # select=1;point=FALSE;se=TRUE;by=NULL;scales="free_x";type=NULL
+     # select=NULL;point=TRUE;se=TRUE;by=NULL;scales="free_x";type=NULL;byauto=FALSE;
 
      temp=deparse(match.call())
      res=call2vars(temp)
      by=res$by
-     facet=TRUE
 
      byall=names(model$var.summary)[sapply(model$var.summary,is.factor)]
      if(length(byall)==1) {
-       if(is.null(by)) {
+       if(byauto && is.null(by)) {
          by=byall[1]
-         facet=FALSE
        }
      }
 
@@ -192,8 +196,12 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
      } else {
           fillvar=by[1]
      }
+     model$model
+     xvars2
+     fillvar
      longdf<-pivot_longer(model$model,cols=all_of(xvars2))
      longdf$name=factor(longdf$name,levels=xvars2)
+     longdf
      if(point) {
           p=ggplot(data=longdf,aes_string(x="value",fill=fillvar,group=fillvar))+
                geom_point(aes_string(y=yvar,color=fillvar),alpha=0.3)
@@ -218,13 +226,21 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
      }
 
      p<-p+ylab(yvar)+scale_x_continuous(guide=guide_axis(n.dodge=2))
+     p
+     facet
+     select
+     fillvar
      if(length(xvars2)>1) {
              p<-p+facet_wrap("name",scales=scales)+xlab("")+
                theme(legend.position="top")
      } else if(facet){
            if(is.null(select)){
+             if(is.null(fillvar)){
+               p<-p+xlab(xvars2)
+             } else{
             p<-p+facet_wrap(fillvar,scales=scales)+xlab("")+
                theme(legend.position="none")
+             }
            } else if(length(select)>1){
              p<-p+facet_wrap(fillvar,scales=scales)+xlab("")+
                theme(legend.position="none")
