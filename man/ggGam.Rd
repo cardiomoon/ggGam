@@ -65,6 +65,7 @@ model2 <- gam(hw.mpg ~ s(weight) + s(length) + s(price) + fuel + drive + style,
    data=mpg, method="REML")
 plot(model2,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 ggGam(model2,se=TRUE)
+ggGam(model2,se=TRUE,by=fuel)
 ggGam(model2,se=TRUE,by=fuel,select=1)
 ggGam(model2,se=FALSE,by=style)
 ggGam(model2,se=FALSE,by=drive,point=FALSE)

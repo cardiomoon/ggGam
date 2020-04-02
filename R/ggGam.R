@@ -11,10 +11,11 @@ formula2vars=function(formula){
         temp2=unlist(strsplit(temp1,"\\+"))
         temp2=gsub(" ","",temp2)
         temp2
-        temp3=gsub(",bs=\"fs\"|^s\\(|^ti\\(|\\)$","",temp2)
+        temp3=gsub(",bs=\".*\"|^s\\(|^ti\\(|\\)$","",temp2)
         temp3
-        temp4=gsub(",by=.*$","",temp3)
+        temp4=gsub("by=|,k=.*$|,sp=.*$","",temp3)
         unique(unlist(strsplit(temp4,",")))
+
 }
 
 #' Make new data for predict
@@ -130,9 +131,9 @@ call2vars=function(string){
 #' ggGam(model)
 #' ggGam(model,by=am)
 #' ggGam(model,by=am,facet=TRUE)
-#' model <- gam(mpg ~ s(wt,by=am)+am, data = mtcars, method = "REML")
+#' model <- gam(mpg ~ s(wt,by=am)+ am, data = mtcars, method = "REML")
 #' plot(model,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
-#' ggGam(model,facet=TRUE)
+#' ggGam(model)
 #' ggGam(model,by=am)
 #' ggGam(model,by=am,facet=TRUE)
 #' ggGam(model,by=am,point=FALSE)
@@ -150,9 +151,11 @@ call2vars=function(string){
 #' ggGam(model2,se=TRUE,by=fuel,select=1)
 #' ggGam(model2,se=FALSE,by=style)
 #' ggGam(model2,se=FALSE,by=drive,point=FALSE)
+#' model6 <- gam(hw.mpg ~ s(weight, by=fuel), data=mpg, method="REML")
+#' ggGam(model6)
 ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type=NULL,byauto=FALSE,facet=FALSE){
 
-      # model=model2;select=1;by="fuel";point=TRUE;se=TRUE;scales="free_x";type=NULL;byauto=FALSE;
+       # model=m1;select=NULL;by=NULL;point=TRUE;se=TRUE;scales="free_x";type=NULL;byauto=FALSE;facet=FALSE
 
      temp=deparse(match.call())
      res=call2vars(temp)
