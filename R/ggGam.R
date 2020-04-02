@@ -146,12 +146,13 @@ call2vars=function(string){
 #'    data=mpg, method="REML")
 #' plot(model2,shift=coef(model)[1],pages=1,all.terms=TRUE,shade=TRUE,seWithMean=TRUE,residuals=TRUE)
 #' ggGam(model2,se=TRUE)
+#' ggGam(model2,se=TRUE,by=fuel)
 #' ggGam(model2,se=TRUE,by=fuel,select=1)
 #' ggGam(model2,se=FALSE,by=style)
 #' ggGam(model2,se=FALSE,by=drive,point=FALSE)
 ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type=NULL,byauto=FALSE,facet=FALSE){
 
-     # select=NULL;point=TRUE;se=TRUE;by=NULL;scales="free_x";type=NULL;byauto=FALSE;
+      # model=model2;select=1;by="fuel";point=TRUE;se=TRUE;scales="free_x";type=NULL;byauto=FALSE;
 
      temp=deparse(match.call())
      res=call2vars(temp)
@@ -230,6 +231,7 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
      facet
      select
      fillvar
+     xvars2
      if(length(xvars2)>1) {
              p<-p+facet_wrap("name",scales=scales)+xlab("")+
                theme(legend.position="top")
@@ -248,7 +250,7 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
              p<-p+xlab(xvars2)
            }
      } else if(!is.null(fillvar)){
-            p<-p+theme(legend.position="top")
+            p<-p+theme(legend.position="top")+xlab(xvars2)
       }else{
              p<-p+xlab(xvars2)
      }
