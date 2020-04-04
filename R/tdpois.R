@@ -101,7 +101,7 @@ stepfun2df=function(x)
 #'@param model An object of class gam
 #'@param data A data.frame
 #'@importFrom stats coef vcov stepfun
-#'@importFrom graphics rug
+#'@importFrom ggplot2 ggplot
 #'@export
 #'@examples
 #' library(survival)
@@ -112,6 +112,7 @@ stepfun2df=function(x)
 #'b <- bam(z ~ tf - 1 + trt + s(sqrt(protime)) + s(platelet) + s(age) + s(bili) +
 #'s(albumin) + s(sqrt(ast)),family=poisson,data=pb,discrete=TRUE,nthreads=2)
 #'data=pbcseq[pbcseq$id %in% c(10,25,66),]
+#'data=pbcseq[pbcseq$id %in% c(25),]
 #'drawFUSurv(b,data)
 drawFUSurv=function(model,data){
     te <- as.numeric(levels(model$model$tf))
@@ -151,7 +152,7 @@ drawFUSurv=function(model,data){
         theme(legend.position="top")
 
     if(length(select)==1){
-        fu=data.frame(x=rug(data$day[data$id==select[1]])) ## measurement times
+        fu=data.frame(x=data$day[data$id==select[1]]) ## measurement times
         p<-p+geom_rug(data=fu)
     }
     p

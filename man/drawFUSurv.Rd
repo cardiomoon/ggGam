@@ -23,5 +23,6 @@ pb$tf <- factor(pb$futime) ## add factor for event time
 b <- bam(z ~ tf - 1 + trt + s(sqrt(protime)) + s(platelet) + s(age) + s(bili) +
 s(albumin) + s(sqrt(ast)),family=poisson,data=pb,discrete=TRUE,nthreads=2)
 data=pbcseq[pbcseq$id \%in\% c(10,25,66),]
+data=pbcseq[pbcseq$id \%in\% c(25),]
 drawFUSurv(b,data)
 }
