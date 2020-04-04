@@ -149,6 +149,7 @@ drawFUSurv=function(model,data){
         geom_line(aes_string(y="y",group="id",color="id"))+
         geom_ribbon(aes_string(ymax="ymax",ymin="ymin",fill="id"),alpha=0.4)+
         theme_bw()+
+        labs(y="Cumulative Survival",x="days")+
         theme(legend.position="top")
 
     if(length(select)==1){
