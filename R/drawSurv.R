@@ -49,7 +49,7 @@ drawSurv=function(model,data,np=100,timevar="time",until=NULL,id=list()){
     ggplot(data=final,aes_string(x="time",y="fit",fill=idname,group=idname))+
         geom_line(aes_string(color=idname))+
         geom_ribbon(aes_string(ymax="ymax",ymin="ymin"),alpha=0.3)+
-        ylim(c(0,1)) + ylab("cumulative survival")+xlab("days")+
+        ylab("cumulative survival")+xlab("days")+
         theme_bw()+
         theme(legend.position = "top")
 }
