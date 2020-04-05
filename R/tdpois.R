@@ -27,6 +27,7 @@ app <- function(x,t,to) {
 #' @param status Numeric 1 for death 0 otherwise
 #' @param id Patient id
 #' @importFrom utils txtProgressBar setTxtProgressBar
+#' @importFrom shiny isRunning
 #' @export
 #' @examples
 #' library(survival)
@@ -41,9 +42,15 @@ tdpois <- function(dat,event="z",et="futime",t="day",status="status1",
 
     te <- sort(unique(dat[[et]][dat[[status]]==1])) ## event times
     sid <- unique(dat[[id]])
+    if (shiny::isRunning()) {
+        progress <- shiny::Progress$new()
+        on.exit(progress$close())
+        progress$set(message = "Making File", value = 0)
+    } else{
     inter <- interactive()
     if (inter) prg <- txtProgressBar(min = 0, max = length(sid), initial = 0,
                                      char = "=",width = NA, title="Progress", style = 3)
+    }
     ## create dataframe for poisson model data
     dat[[event]] <- 0; start <- 1
     dap <- dat[rep(1:length(sid),length(te)),]
@@ -57,7 +64,12 @@ tdpois <- function(dat,event="z",et="futime",t="day",status="status1",
         um[[et]] <- tr ## reset time to relevant event times
         dap[start:(start-1+nrow(um)),] <- um ## copy to dap
         start <- start + nrow(um)
+        if(isRunning()){
+            progress$inc(1/length(sid), detail = paste("Doing part",
+                                                        i + 1, "/", length(sid) + 1))
+        } else{
         if (inter) setTxtProgressBar(prg, i)
+        }
     }
     if (inter) close(prg)
     dap[1:(start-1),]

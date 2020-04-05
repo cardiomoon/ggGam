@@ -13,7 +13,8 @@ Imports: ggplot2(>= 3.3.0),
          tidyr,
          tidyselect,
          predict3d,
-         ggpubr
+         ggpubr,
+         shiny
 Suggests: ISLR,
           gamair,
           survival
