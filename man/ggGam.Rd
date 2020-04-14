@@ -13,7 +13,9 @@ ggGam(
   scales = "free_x",
   type = NULL,
   byauto = FALSE,
-  facet = FALSE
+  facet = FALSE,
+  pointalpha = 0.3,
+  fillalpha = 0.3
 )
 }
 \arguments{
@@ -34,6 +36,8 @@ ggGam(
 \item{byauto}{logical Whether or not choose variabels to facet automatically}
 
 \item{facet}{logical Whether or not make facetted plot}
+
+\item{pointalpha, fillalpha}{Numeric alpha value}
 }
 \description{
 Draw a ggplot with an object of class gam

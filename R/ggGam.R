@@ -115,6 +115,7 @@ call2vars=function(string){
 #' @param type character type argument to be passed to predict.gam
 #' @param byauto logical Whether or not choose variabels to facet automatically
 #' @param facet logical Whether or not make facetted plot
+#' @param pointalpha,fillalpha Numeric alpha value
 #' @export
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyselect all_of
@@ -153,7 +154,8 @@ call2vars=function(string){
 #' ggGam(model2,se=FALSE,by=drive,point=FALSE)
 #' model6 <- gam(hw.mpg ~ s(weight, by=fuel), data=mpg, method="REML")
 #' ggGam(model6)
-ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type=NULL,byauto=FALSE,facet=FALSE){
+ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type=NULL,byauto=FALSE,facet=FALSE,
+               pointalpha=0.3,fillalpha=0.3){
 
        # model=m1;select=NULL;by=NULL;point=TRUE;se=TRUE;scales="free_x";type=NULL;byauto=FALSE;facet=FALSE
 
@@ -208,7 +210,7 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
      longdf
      if(point) {
           p=ggplot(data=longdf,aes_string(x="value",fill=fillvar,group=fillvar))+
-               geom_point(aes_string(y=yvar,color=fillvar),alpha=0.3)
+               geom_point(aes_string(y=yvar,color=fillvar),alpha=pointalpha)
      } else{
           if(!is.null(fillvar)){
           p<-ggplot(df3,aes_string(x="value",fill=fillvar,group=fillvar))
@@ -220,7 +222,7 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
 
 
      if(se) {
-          p<- p+geom_ribbon(data=df3,aes_string(y="fit",ymax="ymax",ymin="ymin"),alpha=0.3)
+          p<- p+geom_ribbon(data=df3,aes_string(y="fit",ymax="ymax",ymin="ymin"),alpha=fillalpha)
      }
 
      if(model$family$family=="Cox PH") {
