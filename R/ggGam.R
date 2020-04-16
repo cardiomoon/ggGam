@@ -27,7 +27,7 @@ formula2vars=function(formula){
 #' @importFrom predict3d restoreData2 restoreData3
 #' @export
 makeNewData=function(model,length=100,by=NULL,type="response"){
-                # length=100;by=NULL
+                 # length=100;by=NULL;type="response"
      xvars=formula2vars(model$formula)
      xvars
      if(!is.null(by)) {
@@ -41,7 +41,13 @@ makeNewData=function(model,length=100,by=NULL,type="response"){
         result=list()
         for(i in 1:length(xvars)){
                x=model$model[[xvars[i]]]
-               if(is.factor(x)) {
+               if(is.numeric(x)) {  ## numeric
+                 if(i==j){
+                   result[[i]]=seq(from=min(x,na.rm=TRUE),to=max(x,na.rm=TRUE),length.out=length)
+                 } else{
+                   result[[i]]=mean(x,na.rm=TRUE)
+                 }
+               } else if(is.factor(x)) {
                     if(i==j) {
                          result[[i]]=levels(x)
                     } else if(xvars[i] %in% by){
@@ -49,12 +55,15 @@ makeNewData=function(model,length=100,by=NULL,type="response"){
                     } else{
                          result[[i]]=levels(x)[1]
                     }
-               } else {  ## numeric
-                    if(i==j){
-                         result[[i]]=seq(from=min(x,na.rm=TRUE),to=max(x,na.rm=TRUE),length.out=length)
-                    } else{
-                         result[[i]]=mean(x,na.rm=TRUE)
-                    }
+               } else {
+                   if(i==j) {
+                     result[[i]]=unique(x)
+                   } else if(xvars[i] %in% by){
+                     result[[i]]=unique(x)
+                   } else{
+                     result[[i]]=names(which.max(table(x)))[1]
+                 }
+
                }
           }
           result
@@ -115,6 +124,7 @@ call2vars=function(string){
 #' @param type character type argument to be passed to predict.gam
 #' @param byauto logical Whether or not choose variabels to facet automatically
 #' @param facet logical Whether or not make facetted plot
+#' @param fillcolor Character Name of fillcolor
 #' @param pointalpha,fillalpha Numeric alpha value
 #' @export
 #' @importFrom tidyr pivot_longer
@@ -155,9 +165,11 @@ call2vars=function(string){
 #' model6 <- gam(hw.mpg ~ s(weight, by=fuel), data=mpg, method="REML")
 #' ggGam(model6)
 ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type=NULL,byauto=FALSE,facet=FALSE,
-               pointalpha=0.3,fillalpha=0.3){
+               fillcolor="red",pointalpha=0.3,fillalpha=0.3){
 
-       # model=m1;select=NULL;by=NULL;point=TRUE;se=TRUE;scales="free_x";type=NULL;byauto=FALSE;facet=FALSE
+       # model=m1;
+      # select=NULL;by=NULL;point=TRUE;se=TRUE;scales="free_x";type=NULL;byauto=FALSE;facet=FALSE;
+      # pointalpha=0.3;fillalpha=0.3
 
      temp=deparse(match.call())
      res=call2vars(temp)
@@ -222,7 +234,11 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
 
 
      if(se) {
+         if(is.null(fillvar)) {
+           p<- p+geom_ribbon(data=df3,aes_string(y="fit",ymax="ymax",ymin="ymin"),fill=fillcolor,alpha=fillalpha)
+         } else{
           p<- p+geom_ribbon(data=df3,aes_string(y="fit",ymax="ymax",ymin="ymin"),alpha=fillalpha)
+         }
      }
 
      if(model$family$family=="Cox PH") {
