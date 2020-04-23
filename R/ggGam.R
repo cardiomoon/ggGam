@@ -11,7 +11,7 @@ formula2vars=function(formula){
         temp2=unlist(strsplit(temp1,"\\+"))
         temp2=gsub(" ","",temp2)
         temp2
-        temp3=gsub(",bs=\".*\"|^s\\(|^ti\\(|\\)$","",temp2)
+        temp3=gsub(",bs=\".*\"|^s\\(|^ti\\(|^te\\(|\\)$","",temp2)
         temp3
         temp4=gsub("by=|,k=.*$|,sp=.*$","",temp3)
         unique(unlist(strsplit(temp4,",")))
@@ -27,7 +27,7 @@ formula2vars=function(formula){
 #' @importFrom predict3d restoreData2 restoreData3
 #' @export
 makeNewData=function(model,length=100,by=NULL,type="response"){
-                 # length=100;by=NULL;type="response"
+                  # length=100;by=NULL;type="response"
      xvars=formula2vars(model$formula)
      xvars
      if(!is.null(by)) {
@@ -168,8 +168,8 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
                fillcolor="red",pointalpha=0.3,fillalpha=0.3){
 
        # model=m1;
-      # select=NULL;by=NULL;point=TRUE;se=TRUE;scales="free_x";type=NULL;byauto=FALSE;facet=FALSE;
-      # pointalpha=0.3;fillalpha=0.3
+      # select=NULL;point=TRUE;se=TRUE;by=NULL;scales="free_x";type=NULL;byauto=FALSE;facet=FALSE;
+      # fillcolor="red";pointalpha=0.3;fillalpha=0.3
 
      temp=deparse(match.call())
      res=call2vars(temp)
