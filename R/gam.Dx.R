@@ -29,7 +29,8 @@ gam.Dx=function (b, type = c("deviance", "pearson","response"),rep=0,level=0.9,s
     } else {
         napredict(b$na.action, b$linear.predictors)
     }
-    p1=qqgam(b, rep = rep, level = level, type = type)+theme_bw()
+    p1=qqgam(b, rep = rep, level = level, type = type)+theme_bw()+
+        labs(title="Normal Q-Q Plot",x="Theoretical qunatiles",y="Deviance residuals")
 
     df=data.frame(x=linpred,y=resid)
     p2=ggplot(df,aes_string(x="x",y="y"))+geom_point(alpha=0.6)+labs(title="Residuals vs. linear pred.", x = "linear predictor",  y = "residuals")+geom_hline(yintercept=0,color="red")+theme_bw()

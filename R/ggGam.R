@@ -104,10 +104,12 @@ makeNewData=function(model,length=100,by=NULL,type="response"){
 #'@param string A character
 #'@return A list
 call2vars=function(string){
+  str(string)
   temp1 = gsub("^.*\\(|\\)$| |\"", "", string)
   temp2=unlist(strsplit(temp1,","))
   temp3=unlist(strsplit(temp2,"="))
   result=list()
+  result
   for(i in 1:(length(temp3)/2)){
     result[[temp3[2*i-1]]]=temp3[2*i]
   }
@@ -168,12 +170,14 @@ ggGam=function(model,select=NULL,point=TRUE,se=TRUE,by=NULL,scales="free_x",type
                fillcolor="red",pointalpha=0.3,fillalpha=0.3){
 
        # model=m1;
-      # select=NULL;point=TRUE;se=TRUE;by=NULL;scales="free_x";type=NULL;byauto=FALSE;facet=FALSE;
+      # select=NULL;point=TRUE;se=TRUE;by=NULL;scales="free_x";type=NULL;byauto=TRUE;facet=FALSE;
       # fillcolor="red";pointalpha=0.3;fillalpha=0.3
 
      temp=deparse(match.call())
+      # temp="ggGam(model = model, byauto = TRUE)"
      res=call2vars(temp)
-     by=res$by
+     str(res)
+     by=res[["by"]]
 
      byall=names(model$var.summary)[sapply(model$var.summary,is.factor)]
      if(length(byall)==1) {
